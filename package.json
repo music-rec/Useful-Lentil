@@ -1,0 +1,17 @@
+{
+  "name": "useful-lentil",
+  "description": "Download Youtube videos in various formats",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Sank6",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
+    "jetty": "^0.2.1",
+    "node-fetch": "^2.6.0",
+    "ytdl-core": "^2.0.1"
+  }
+}
