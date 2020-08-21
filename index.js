@@ -112,14 +112,15 @@ FfmpegCommand.setFfprobePath(path.join(__dirname, '/ffmpeg/bin/ffprobe.exe'));
                         album: songList[0].album.name,
                         image
                     }
+                    let name = songList[0].name.replace(/[^a-zA-Z0-9\+(\-){1,}]{1,}/g, "");
                     NodeID3.write(tags, buf, function (err, buffer) {
                         jetty.clear();
                         jetty.rgb([0, 5, 0]);
                         jetty.moveTo([0, 0]);
                         jetty.text(`Added metadata`);
-                        fs.writeFileSync(`${songList[0].name}.${chosenFormat}`, buffer)
+                        fs.writeFileSync(`${name}.${chosenFormat}`, buffer)
                         jetty.moveTo([1, 0]);
-                        jetty.text(`Saved to ${songList[0].name}.${chosenFormat}`);
+                        jetty.text(`Saved to ${name}.${chosenFormat}`);
                         jetty.rgb([5, 5, 5]);
                         process.exit();
                     })
