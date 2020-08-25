@@ -25,7 +25,7 @@ FfmpegCommand.setFfprobePath(path.join(__dirname, '/ffmpeg/bin/ffprobe.exe'));
     let fileurl = data.formats[0].url;
     let format = data.formats[0].container;
     let time = data.length_seconds;
-    let title = data.title;
+    let title = data.title.replace(/[^a-zA-Z0-9\+(\-){1,}]{1,}/g, "");;
     jetty.clear();
     jetty.rgb([5, 5, 0]);
     jetty.moveTo([0, 0]);
