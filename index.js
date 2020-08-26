@@ -11,6 +11,7 @@ app.on("ready", () => {
         width: 800,
         height: 300,
         resizable: false,
+        backgroundColor: '#3D383D',
         webPreferences: {
           nodeIntegration: true,
           enableRemoteModule: true
