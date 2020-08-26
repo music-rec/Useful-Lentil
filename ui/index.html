@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <title>Useful Lentil</title>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+        <script>if (typeof module === 'object') {window.module = module;module = undefined;}</script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"/>
+        <script>if (window.module) module = window.module;</script>
+
+        <link rel="stylesheet" href="assets/css/style.css">
+        <script src="assets/js/script.js"></script>
+    </head>
+
+    <body>
+        <div class="close">
+            <span id="minimise">🗕︎</span>
+            <span id="maximise">🗖︎</span>
+            <span id="close">🗙︎</span>
+        </div>
+
+        <div id="content">
+            <div id="stageOne" class="stage">
+                <div class="center-case">
+                    <input type="text" id="search" placeholder="youtu.be/dQw4w9WgXcQ">
+                    <button id="next" type="button"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div id="stageTwo" class="stage">
+                <div class="flex-container">
+                    <div id="video" class="format"><i class="fas fa-video"></i> Video</div>
+                    <div id="audio" class="format"><i class="fas fa-volume-up"></i> Audio</div>
+                </div>
+            </div>
+            <div id="stageThree" class="stage">
+                <div id="format-selection">
+                    <h2>Options</h2>
+                    <div id="file-formats"></div>
+                    
+                    <button id="convert" class="large-btn">Download <i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div id="stageFour" class="stage">
+                <div class="center-case">
+                    <h2 id="status">Converting...</h2>
+                    <a class="hidden">Start over</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="progress"></div><div id="progress-background"></div>
+    </body>
+</html>

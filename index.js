@@ -1,156 +1,39 @@
-const ytdl = require('ytdl-core');
-const fetch = require("node-fetch");
-const FfmpegCommand = require('fluent-ffmpeg');
-const music = require('music-api');
-const NodeID3 = require('node-id3')
-const Jetty = require("jetty");
-const concat = require('concat-stream');
+const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("path");
 
-const path = require('path');
-const fs = require("fs");
+const formats = require("./ytdl/formats.js");
+const convert = require("./ytdl/convert.js");
 
-const input = require('./utils/input');
+var win;
 
-const formats = ["avi", "mp4", "mp3", "wav", "gif"];
-const jetty = new Jetty(process.stdout);
+app.on("ready", () => {
+    win = new BrowserWindow({
+        width: 800,
+        height: 300,
+        resizable: false,
+        webPreferences: {
+          nodeIntegration: true,
+          enableRemoteModule: true
+        },
+        frame: false,
+        icon: path.join(__dirname, "/ui/assets/img/lentil.ico")
+    });
+    win.setMenuBarVisibility(false)
 
-FfmpegCommand.setFfmpegPath(path.join(__dirname, '/ffmpeg/bin/ffmpeg.exe'));
-FfmpegCommand.setFfprobePath(path.join(__dirname, '/ffmpeg/bin/ffprobe.exe'));
+    win.loadFile("ui/index.html")
+});
 
-(async () => {
-    let url = await input("Youtube URL: ");
-    let chosenFormat = await input("Pick format (mp3, mp4, avi, wav, gif): ");
-    if (!formats.includes(chosenFormat)) return console.log("Invalid format.")
-    let data = await ytdl.getInfo(url);
-    let fileurl = data.formats[0].url;
-    let format = data.formats[0].container;
-    let time = data.length_seconds;
-    let title = data.title.replace(/[^a-zA-Z0-9\+(\-){1,}]{1,}/g, "");;
-    jetty.clear();
-    jetty.rgb([5, 5, 0]);
-    jetty.moveTo([0, 0]);
-    jetty.text("Fetching File...");
-    fetch(fileurl)
-        .then(res => {
-            let stream = res.body;
-            if (chosenFormat === format) {
-                let writeStream = fs.createWriteStream(`${title}.${format}`);
-                stream.pipe(writeStream);
-                jetty.rgb([0, 5, 0]);
-                jetty.moveTo([1, 0]);
-                jetty.text(`Saved to ${title}.${chosenFormat}`);
-                jetty.rgb([5, 5, 5]);
-                process.exit();
-            }
-            if (chosenFormat !== "mp3") {
-                new FfmpegCommand(stream)
-                    .inputFormat(format)
-                    .outputFormat(chosenFormat)
-                    .output(`${title}.${chosenFormat}`)
-                    .on('start', function () {
-                        jetty.clear();
-                        jetty.rgb([5, 5, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text("Converting 0%");
-                    })
-                    .on('error', function (err) {
-                        jetty.clear();
-                        jetty.rgb([5, 0, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text(`Error: ${err.msg}`);
-                    })
-                    .on('progress', function (progress) {
-                        let a = progress.timemark.split(".")[0].split(":");
-                        let seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
-                        let percent = Math.round((seconds / time) * 100);
-                        jetty.clear();
-                        jetty.rgb([5, 5, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text(`Converting ${percent}%`);
-                    })
-                    .on('end', async function () {
-                        jetty.rgb([0, 5, 0]);
-                        jetty.moveTo([1, 0]);
-                        jetty.text(`Saved to ${title}.${chosenFormat}`);
-                        jetty.rgb([5, 5, 5]);
-                        process.exit();
-                    })
-                    .run()
-            } else {
-                const writable = concat(opts = {
-                    encoding: "buffer"
-                }, async function (buf) {
-                    jetty.clear();
-                    jetty.rgb([0, 5, 0]);
-                    jetty.moveTo([0, 0]);
-                    jetty.text(`Converted successfully`);
-                    jetty.moveTo([1, 0]);
-                    jetty.text(`Finding metadata...`);
-                    jetty.moveTo([2, 0]);
-                    let { songList } = await music.searchSong('netease', {
-                        key: title.split(" (")[0],
-                        limit: 5,
-                        page: 1
-                    });
-                    if (songList.length === 0) {
-                        jetty.clear();
-                        jetty.rgb([5, 0, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text(`No metadata found`);
-                        fs.writeFileSync(`${title}.${chosenFormat}`, buf)
-                        jetty.rgb([0, 5, 0]);
-                        jetty.moveTo([1, 0]);
-                        jetty.text(`Saved to ${title}.${chosenFormat}`);
-                        jetty.rgb([5, 5, 5]);
-                        process.exit();
-                    }
-                    let image = await fetch(songList[0].album.coverBig);
-                    image = await image.buffer();
-                    let tags = {
-                        title: songList[0].name,
-                        artist: songList[0].artists.map(x => x.name).join(", "),
-                        album: songList[0].album.name,
-                        image
-                    }
-                    let name = songList[0].name.replace(/[^a-zA-Z0-9\+(\-){1,}]{1,}/g, "");
-                    NodeID3.write(tags, buf, function (err, buffer) {
-                        jetty.clear();
-                        jetty.rgb([0, 5, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text(`Added metadata`);
-                        fs.writeFileSync(`${name}.${chosenFormat}`, buffer)
-                        jetty.moveTo([1, 0]);
-                        jetty.text(`Saved to ${name}.${chosenFormat}`);
-                        jetty.rgb([5, 5, 5]);
-                        process.exit();
-                    })
-                })
-                new FfmpegCommand(stream)
-                    .inputFormat(format)
-                    .outputFormat(chosenFormat)
-                    .output(writable)
-                    .on('start', function () {
-                        jetty.clear();
-                        jetty.rgb([5, 5, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text("Converting 0%");
-                    })
-                    .on('error', function (err) {
-                        jetty.clear();
-                        jetty.rgb([5, 0, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text(`Error: ${err.msg}`);
-                    })
-                    .on('progress', function (progress) {
-                        let a = progress.timemark.split(".")[0].split(":");
-                        let seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
-                        let percent = Math.round((seconds / time) * 100);
-                        jetty.clear();
-                        jetty.rgb([5, 5, 0]);
-                        jetty.moveTo([0, 0]);
-                        jetty.text(`Converting ${percent}%`);
-                    })
-                    .run()
-            }
-        })
-})()
+app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+        app.quit();
+    }
+});
+
+ipcMain.on('get-formats', async (event, youtube) => {
+    let f = await formats(youtube);
+    event.reply('get-formats-reply', f)
+})
+
+ipcMain.on('convert', module.exports = async (event, options) => {
+    convert(event, options, win);
+})

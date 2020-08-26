@@ -1,10 +1,14 @@
 # Useful Lentil
-A command line youtube converter. (contains ffmpeg binaries for windows. check [here](https://github.com/fluent-ffmpeg/node-fluent-ffmpeg#ffmpeg-and-ffprobe) for linux or mac)
 
-## Setup
- - Install the dependencies: `npm i`
- - Run the file: `node index.js`
+A YouTube downloader UI, written in [Electron](https://www.electronjs.org/) and [ytdl-core](https://github.com/fent/node-ytdl-core/).
 
-## Supported formats:
- - Video formats: `avi`, `mp4`, `gif`
- - Audio formats: `mp3`, `wav`
+![](screenshots/home.png)
+
+# Running
+1. Install the dependencies: `npm i`
+2. Run: `npm start`
+
+# To Do
+ - Add metadata
+ - Create checkpoints in JS stages
+ - Add more file types

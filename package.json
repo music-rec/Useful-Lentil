@@ -1,23 +1,17 @@
 {
   "name": "useful-lentil",
-  "description": "Download Youtube videos in various formats",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Youtube Downloader UI",
   "scripts": {
-    "start": "node index.js"
+    "start": "electron ."
   },
-  "author": "Sank6",
   "license": "GPL-3.0-or-later",
-  "dependencies": {
-    "concat-stream": "^2.0.0",
-    "fluent-ffmpeg": "^2.1.2",
-    "jetty": "^0.2.1",
-    "music-api": "^0.3.11",
-    "node-fetch": "^2.6.0",
-    "node-id3": "^0.1.16",
-    "ytdl-core": "^2.0.1"
+  "devDependencies": {
+    "electron": "^9.2.1"
   },
-  "engines": {
-    "node": ">=12.0"
+  "dependencies": {
+    "fluent-ffmpeg": "^2.1.2",
+    "node-fetch": "^2.6.0",
+    "ytdl-core": "^3.2.2"
   }
 }
