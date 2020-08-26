@@ -8,12 +8,9 @@ const videoFormats = ["mp4", "avi"]
 var urlRegex = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/g;
 
 var selectedFormat = 0; // 0 = audio, 1 = video
-var formatValue;
-var fileType;
+var time, videoTitle, youtube, fileType, formatValue;
 var metadata = false;
-var time;
 var stage = 0;
-var youtube;
 
 
 $(document).ready(() => {
@@ -77,7 +74,6 @@ let binds = () => {
     })
 
     $(".file-format").click(e => {
-        console.log("CLICKED")
         $(".file-format").removeClass("selected");
         $(e.target).closest('.file-format').addClass("selected");
     });
@@ -118,8 +114,9 @@ let stage_two = async () => {
         ipcRenderer.on('get-formats-reply', (_, formats) => {
             $("#loadingStage").hide();
             $("#stageTwo").show();
-            let {audio, video, length_seconds} = formats;
-            time = length_seconds;
+            let {audio, video, lengthSeconds, title} = formats;
+            time = lengthSeconds;
+            videoTitle = title.replace(/([^a-zA-Z0-9\s_\\.\-\(\):])+/gm, "-");
 
             $("#video").unbind("click");
             $("#video").click(() => {
@@ -165,9 +162,9 @@ let stage_three = () => {
 let stage_four = async () => {
     $(".stage").hide();
     let { canceled, filePath } = await dialog.showSaveDialog({
-            defaultPath: `${app.getPath("downloads")}\\download.${fileType}`,
+            defaultPath: `${app.getPath("downloads")}\\${videoTitle}.${fileType}`,
             filters: [{name: fileType.toUpperCase(), extensions: [fileType]}]
-        });
+        }); 
 
     if (canceled) {
         return stage_three();
@@ -175,11 +172,16 @@ let stage_four = async () => {
 
     $(".stage").hide();
     $("#stageFour").show();
-
+    $("#restart").hide();
     $(".progress-blob").hide();
+
+    $("#status").text("Converting...");
     
     ipcRenderer.send('convert', {selectedFormat, formatValue, fileType, metadata, time, filePath});
     ipcRenderer.on('convert-complete', () => {
+        $("#status").text("Downloading...");
+    })
+    ipcRenderer.on('download-complete', () => {
         $("#status").text("Downloaded!");
         $("#restart").show();
         $(".progress-blob").show();
