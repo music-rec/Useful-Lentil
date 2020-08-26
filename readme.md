@@ -1,6 +1,6 @@
 # Useful Lentil
 
-A YouTube downloader UI, written in [Electron](https://www.electronjs.org/) and [ytdl-core](https://github.com/fent/node-ytdl-core/).
+A YouTube downloader UI, written using [Electron](https://www.electronjs.org/) and [ytdl-core](https://github.com/fent/node-ytdl-core/).
 
 ![](screenshots/home.png)
 
