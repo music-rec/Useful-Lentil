@@ -38,18 +38,31 @@
                 <div id="format-selection">
                     <h2>Options</h2>
                     <div id="file-formats"></div>
-                    
-                    <button id="convert" class="large-btn">Download <i class="fas fa-chevron-right"></i></button>
+                    <div id="metadata-holder"></div>
+                    <button id="convert" class="large-btn">Download <i class="fas fa-download"></i></button>
                 </div>
             </div>
             <div id="stageFour" class="stage">
                 <div class="center-case">
                     <h2 id="status">Converting...</h2>
-                    <a class="hidden">Start over</a>
+                    <a id="restart" class="hidden" href="javascript:window.location.reload(true)">Start over</a>
+                </div>
+            </div>
+            <div id="loadingStage" class="stage">
+                <div class="center-case">
+                    <h2>Loading...</h2>
                 </div>
             </div>
         </div>
 
-        <div id="progress"></div><div id="progress-background"></div>
+        <div class="progress-bar">
+            <div id="progress"></div>
+            <div id="progress-background"></div>
+            <div id="progress-blobs">
+                <div class="progress-blob hidden" id="progress-one"></div>
+                <div class="progress-blob hidden" id="progress-two"></div>
+                <div class="progress-blob hidden" id="progress-three"></div>
+            </div>
+        </div>
     </body>
 </html>

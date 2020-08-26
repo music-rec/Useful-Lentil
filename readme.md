@@ -10,5 +10,4 @@ A YouTube downloader UI, written in [Electron](https://www.electronjs.org/) and 
 
 # To Do
  - Add metadata
- - Create checkpoints in JS stages
  - Add more file types

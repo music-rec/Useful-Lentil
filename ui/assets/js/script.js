@@ -1,8 +1,9 @@
 const { shell, remote, clipboard, ipcRenderer } = require('electron');
 const { dialog, app } = remote;
 
-var stage = 0;
-var totalStages = 3;
+const totalStages = 3;
+const audioFormats = ["mp3", "wav"];
+const videoFormats = ["mp4", "avi"]
 
 var urlRegex = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/g;
 
@@ -11,9 +12,28 @@ var formatValue;
 var fileType;
 var metadata = false;
 var time;
+var stage = 0;
+var youtube;
 
 
 $(document).ready(() => {
+    binds()
+    stage_one()
+});
+
+let progress = (p = null) => {
+    if (!p) {
+        p = String((stage / totalStages) * 100) + "%";
+    }
+    $("#progress").css("width", `calc(${p} - 40px)`);
+}
+
+let binds = () => {
+    // Remove all click events and rebind
+    $("body").find("*").each(function() {
+        $(this).off("click");
+    });
+
     $("#close").click(() => {
         let w = remote.getCurrentWindow();
         w.close();
@@ -27,23 +47,20 @@ $(document).ready(() => {
         shell.openExternal(this.href);
     });
 
-    stage_one()
-});
+    $("#progress-one").click(() => {
+        stage = 0;
+        stage_one()
+    });
 
-let progress = (p = null) => {
-    let increaseStage = false;
-    if (!p) {
-        p = String((stage / totalStages) * 100) + "%";
-        increaseStage = true;
-    }
-    $("#progress").css("width", `calc(${p} - 40px)`);
-    if (increaseStage) stage ++;
-}
+    $("#progress-two").click(() => {
+        stage = 1;
+        stage_two()
+    });
 
-let stage_one = () => {
-    $(".stage").hide();
-    $("#stageOne").show();
-    progress();
+    $("#progress-three").click(() => {
+        stage = 2;
+        stage_three()
+    });
 
     let loop = setInterval(() => {
         let text = clipboard.readText();
@@ -55,54 +72,12 @@ let stage_one = () => {
     })
 
     $("#next").click(() => {
-        if (stage == 1) stage_two($("#search").val());
+        youtube = $("#search").val();
+        stage_two();
     })
-}
-
-let stage_two = async (youtube) => {
-    $(".stage").hide();
-    if (!youtube.match(urlRegex) || youtube.match(urlRegex).length > 1) {
-        stage -= 3;
-        progress()
-        stage_one()
-    } else {
-        ipcRenderer.send('get-formats', youtube);
-        ipcRenderer.on('get-formats-reply', (_, formats) => {
-            $("#stageTwo").show();
-            progress();
-            let {audio, video, length_seconds} = formats;
-            time = length_seconds;
-
-            $("#video").click(() => {
-                selectedFormat = 1;
-                formatValue = video;
-                stage_three();
-            })
-
-            $("#audio").click(() => {
-                formatValue = audio;
-                stage_three(audio);
-            })
-        });
-    }
-}
-
-let stage_three = () => {
-    $(".stage").hide();
-    $("#stageThree").show();
-    progress();
-
-    let formats = ["mp3", "wav"];
-    if (selectedFormat == 1) 
-        formats = ["mp4", "avi"];
-    else
-        $("#file-formats").after(`<input type="checkbox" id="metadata" name="metadata"><label for="metadata"> Add Metadata</label><br><br>`);
-
-    for (let f of formats) {
-        $("#file-formats").append(`<button id="${f}" class="file-format">${f}</button>`);
-    }
 
     $(".file-format").click(e => {
+        console.log("CLICKED")
         $(".file-format").removeClass("selected");
         $(e.target).closest('.file-format').addClass("selected");
     });
@@ -115,6 +90,78 @@ let stage_three = () => {
     })
 }
 
+let stage_one = () => {
+    $(".stage").hide();
+    $("#stageOne").show();
+    stage = 0;
+    progress();
+
+    $(".progress-blob").hide();
+    $("#progress-one").show();
+}
+
+let stage_two = async () => {
+    stage = 1;
+    progress()
+    $(".stage").hide();
+    $("#loadingStage").show();
+
+    $(".progress-blob").hide();
+    $("#progress-one").show();
+
+    if (!youtube.match(urlRegex) || youtube.match(urlRegex).length > 1) {
+        stage = 0;
+        progress()
+        stage_one()
+    } else {
+        ipcRenderer.send('get-formats', youtube);
+        ipcRenderer.on('get-formats-reply', (_, formats) => {
+            $("#loadingStage").hide();
+            $("#stageTwo").show();
+            let {audio, video, length_seconds} = formats;
+            time = length_seconds;
+
+            $("#video").unbind("click");
+            $("#video").click(() => {
+                selectedFormat = 1;
+                formatValue = video;
+                stage_three();
+            })
+            $("#audio").unbind("click");
+            $("#audio").click(() => {
+                selectedFormat = 0;
+                formatValue = audio;
+                stage_three(audio);
+            })
+        });
+    }
+}
+
+let stage_three = () => {
+    $(".stage").hide();
+    $("#stageThree").show();
+    stage = 2;
+    progress();
+
+    $(".progress-blob").hide();
+    $("#progress-one").show();
+    $("#progress-two").show();
+
+    $("#file-formats").empty();
+    $("#metadata-holder").empty();
+
+    let formats = audioFormats;
+    if (selectedFormat == 1) 
+        formats = videoFormats;
+    else
+        $("#metadata-holder").html(`<input type="checkbox" id="metadata" name="metadata"><label for="metadata"> Add Metadata</label><br><br>`);
+
+    for (let f of formats) {
+        $("#file-formats").append(`<button id="${f}" class="file-format">${f}</button>`);
+    }
+    binds()
+}
+
 let stage_four = async () => {
     $(".stage").hide();
     let { canceled, filePath } = await dialog.showSaveDialog({
@@ -123,20 +170,19 @@ let stage_four = async () => {
         });
 
     if (canceled) {
-        stage = 2;
         return stage_three();
     }
 
     $(".stage").hide();
     $("#stageFour").show();
+
+    $(".progress-blob").hide();
     
     ipcRenderer.send('convert', {selectedFormat, formatValue, fileType, metadata, time, filePath});
     ipcRenderer.on('convert-complete', () => {
         $("#status").text("Downloaded!");
-        $(".hidden").show();
-        $(".hidden").click(() => {
-            location.reload();
-        });
+        $("#restart").show();
+        $(".progress-blob").show();
     })
     ipcRenderer.on('convert-error', (_, error) => {
         console.log(error)

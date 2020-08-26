@@ -29,13 +29,16 @@ module.exports = async (event, options, win) => {
             let a = progress.timemark.split(".")[0].split(":");
             let seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
             let percent = Math.round((seconds / time) * 100);
+            win.setProgressBar(percent / 100)
             event.reply('convert-percent', percent)
         })
         .on('end', function () {
+            win.setProgressBar(-1)
             event.reply('convert-complete', true);
             exec(`explorer.exe /select,"${filePath}"`);
         })
         .on('error', function (err) {
+            win.setProgressBar(-1)
             event.reply('convert-error', err)
         })
         .run()
