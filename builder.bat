@@ -1,0 +1,1 @@
+electron-packager . "Useful Lentil" --icon="ui/assets/img/lentil.png" --out="builds"
