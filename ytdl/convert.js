@@ -1,14 +1,15 @@
 const fetch = require("node-fetch");
-const FfmpegCommand = require('fluent-ffmpeg');
-const path = require("path");
-const fs = require("fs");
-const { exec } = require('child_process');
+const concat = require('concat-stream');
+const music = require("music-api")
+const NodeID3 = require('node-id3');
 
-FfmpegCommand.setFfmpegPath(path.join(__dirname, '../ffmpeg/bin/ffmpeg.exe'));
-FfmpegCommand.setFfprobePath(path.join(__dirname, '../ffmpeg/bin/ffprobe.exe'));
+const { exec } = require('child_process');
+const fs = require("fs");
+
+const ffmpeg = require("./ffmpeg");
 
 module.exports = async (event, options, win) => {
-    let {selectedFormat, formatValue, fileType, metadata, time, filePath} = options;
+    let {selectedFormat, formatValue, fileType, metadata, time, filePath, videoTitle} = options;
     let {body} = await fetch(formatValue.url);
 
     let writeStream = fs.createWriteStream(filePath);
@@ -18,31 +19,50 @@ module.exports = async (event, options, win) => {
         exec(`explorer.exe /select,"${filePath}"`);
     });
 
+    let moreOptions = {body, win, event};
+
     if (fileType === formatValue.container) {
         win.setProgressBar(2);
         body.pipe(writeStream);
         event.reply('convert-percent', 100);
         event.reply('convert-complete', true);
     } else {
-        new FfmpegCommand(body)
-            .inputFormat(formatValue.container)
-            .outputFormat(fileType)
-            .output(writeStream)
-            .on('progress', function (progress) {
-                let a = progress.timemark.split(".")[0].split(":");
-                let seconds = (+a[0]) * 60 * 60 + (+a[1]) * 60 + (+a[2]);
-                let percent = Math.round((seconds / time) * 100);
-                win.setProgressBar(percent / 100)
-                event.reply('convert-percent', percent)
-                if (!percent >= 99) {
-                    win.setProgressBar(2)
-                    event.reply('convert-complete', true);
+        if (!metadata) {
+            moreOptions.output = writeStream;
+            ffmpeg(options, moreOptions)
+        } else {
+            const writable = concat(opts = { encoding: "buffer" }, async function (buf) {
+                let { songList } = await music.searchSong('netease', {
+                    key: videoTitle.split(" (")[0],
+                    limit: 1,
+                    page: 1
+                });
+                if (songList.length === 0) {
+                    event.reply('metadata-msg', "No metadata was found");
+                    fs.writeFileSync(filePath, buf);
+                    win.setProgressBar(-1);
+                    event.reply('download-complete', true);
+                    exec(`explorer.exe /select,"${filePath}"`);
+                } else {
+                    let image = await fetch(songList[0].album.coverBig);
+                    image = await image.buffer();
+                    let tags = {
+                        title: songList[0].name,
+                        artist: songList[0].artists.map(x => x.name).join(", "),
+                        album: songList[0].album.name,
+                        image
+                    }
+                    NodeID3.write(tags, buf, function (err, buffer) {
+                        event.reply('metadata-msg', "Added metadata");
+                        fs.writeFileSync(filePath, buffer);
+                        win.setProgressBar(-1);
+                        event.reply('download-complete', true);
+                        exec(`explorer.exe /select,"${filePath}"`);
+                    })
                 }
-            })
-            .on('error', function (err) {
-                win.setProgressBar(-1)
-                event.reply('convert-error', err)
-            })
-            .run()
+            });
+            moreOptions.output = writable;
+            ffmpeg(options, moreOptions)
+        }
     }
 }

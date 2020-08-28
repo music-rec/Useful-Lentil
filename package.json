@@ -10,8 +10,11 @@
     "electron": "^9.2.1"
   },
   "dependencies": {
+    "concat-stream": "^2.0.0",
     "fluent-ffmpeg": "^2.1.2",
+    "music-api": "^0.3.11",
     "node-fetch": "^2.6.0",
+    "node-id3": "^0.1.18",
     "ytdl-core": "^3.2.2"
   }
 }

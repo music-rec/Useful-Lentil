@@ -176,11 +176,14 @@ let stage_four = async () => {
     $(".progress-blob").hide();
 
     $("#status").text("Converting...");
-    
-    ipcRenderer.send('convert', {selectedFormat, formatValue, fileType, metadata, time, filePath});
+    ipcRenderer.send('convert', {selectedFormat, formatValue, fileType, metadata, time, filePath, videoTitle});
     ipcRenderer.on('convert-complete', () => {
-        $("#status").text("Downloading...");
-    })
+        $("#status").text("Loading...");
+    });
+    ipcRenderer.on('metadata-msg', (_, msg) => {
+        console.log(msg)
+        $("#status").text(msg);
+    });
     ipcRenderer.on('download-complete', () => {
         $("#status").text("Downloaded!");
         $("#restart").show();

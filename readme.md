@@ -9,5 +9,4 @@ A YouTube downloader UI, written using [Electron](https://www.electronjs.org/) a
 2. Run: `npm start`
 
 # To Do
- - Add metadata
  - Add more file types
