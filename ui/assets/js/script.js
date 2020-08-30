@@ -3,7 +3,7 @@ const { dialog, app } = remote;
 
 const totalStages = 3;
 const audioFormats = ["mp3", "wav", "ogg"];
-const videoFormats = ["mp4", "avi", "gif", "flv", "webm", "gif"]
+const videoFormats = ["mp4", "avi", "flv", "webm", "gif"]
 
 var urlRegex = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/g;
 
