@@ -2,8 +2,8 @@ const { shell, remote, clipboard, ipcRenderer } = require('electron');
 const { dialog, app } = remote;
 
 const totalStages = 3;
-const audioFormats = ["mp3", "wav"];
-const videoFormats = ["mp4", "avi"]
+const audioFormats = ["mp3", "wav", "ogg"];
+const videoFormats = ["mp4", "avi", "gif", "flv", "webm", "gif"]
 
 var urlRegex = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/g;
 
