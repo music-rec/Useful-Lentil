@@ -1,1 +1,1 @@
-electron-packager . "Useful Lentil" --icon="ui/assets/img/lentil.png" --out="builds"
+electron-packager . "Useful Lentil" --icon="ui/assets/img/lentil.png" --out="builds" && clean.bat

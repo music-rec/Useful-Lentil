@@ -1,0 +1,17 @@
+cd "builds\Useful Lentil-win32-x64"
+
+rmdir /s /q "locales"
+rmdir /s /q "swiftshader"
+
+del "chrome_100_percent.pak"
+del "chrome_200_percent.pak"
+del "d3dcompiler_47.dll"
+del "libEGL.dll"
+del "libGLESv2.dll"
+del "LICENSE"
+del "LICENSES.chromium.html"
+del "snapshot_blob.bin"
+del "version"
+del "vk_swiftshader.dll"
+del "vk_swiftshader_icd.json"
+del "vulkan-1.dll"
