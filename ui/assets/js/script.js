@@ -193,7 +193,9 @@ let stage_four = async () => {
         console.log(error)
     })
     ipcRenderer.on('convert-percent', (_, percent) => {
-        let calc = String((percent / totalStages) + (((totalStages - 1) / totalStages) * 100)) + "%";
+        let calc = (percent / totalStages) + (((totalStages - 1) / totalStages) * 100)
+        if (calc > 99) calc = 100
+        calc = String(calc) + "%";
         progress(calc);
     })
 }
